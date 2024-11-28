@@ -1,6 +1,6 @@
 ////// Author: Nicolas Chourot
 ////// 2024
-//////////////////////////////
+////////////////////////////// init
 
 const periodicRefreshPeriod = 10;
 const waitingGifTrigger = 2000;
@@ -16,6 +16,7 @@ let itemLayout;
 let waiting = null;
 let showKeywords = false;
 let keywordsOnchangeTimger = null;
+let user = null;
 
 Init_UI();
 async function Init_UI() {
@@ -116,6 +117,13 @@ function hidePosts() {
     $('#menu').hide();
     periodic_Refresh_paused = true;
 }
+function hideConnection() {
+    $("#connectionForm").hide();
+}
+
+function hideAccountForm() {
+    $("#accountForm").hide();
+}
 function showForm() {
     hidePosts();
     $('#form').show();
@@ -159,6 +167,31 @@ function showAbout() {
     $('#abort').show();
     $("#viewTitle").text("À propos...");
     $("#aboutContainer").show();
+}
+
+function showConnection() {
+    hidePosts();
+    $("#connectionForm").show();
+    renderConnectionForm();
+}
+
+function showAccountForm() {
+    hideConnection();
+    hidePosts();
+    $("#accountForm").show();
+    renderAccountForm();
+}
+
+//////////////////////////// Connection rendering /////////////////////////////////////////////////////////////
+
+//////////////////////////// Connection rendering /////////////////////////////////////////////////////////////
+
+function renderConnectionForm() {
+    
+}
+
+function renderAccountForm() {
+
 }
 
 //////////////////////////// Posts rendering /////////////////////////////////////////////////////////////
@@ -255,6 +288,12 @@ function updateDropDownMenu() {
     let selectClass = selectedCategory === "" ? "fa-check" : "fa-fw";
     DDMenu.empty();
     DDMenu.append($(`
+        <div class="dropdown-item menuItemLayout" id="connection">
+            <i class="menuIcon mx-2 fa-solid fa-arrow-right-to-bracket"></i>Connection
+        </div>
+        `));
+    DDMenu.append($(`<div class="dropdown-divider"></div>`));
+    DDMenu.append($(`
         <div class="dropdown-item menuItemLayout" id="allCatCmd">
             <i class="menuIcon fa ${selectClass} mx-2"></i> Toutes les catégories
         </div>
@@ -286,6 +325,9 @@ function updateDropDownMenu() {
         selectedCategory = $(this).text().trim();
         await showPosts(true);
         updateDropDownMenu();
+    });
+    $('#connection').on("click", function() {
+        showConnection();
     });
 }
 function attach_Posts_UI_Events_Callback() {
