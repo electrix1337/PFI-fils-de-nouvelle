@@ -81,6 +81,9 @@ body {
     overflow-y: auto;
     scrollbar-gutter: stable;
     margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .scrollPanel {
@@ -132,7 +135,6 @@ body {
     font-size: 1.1rem;
     -webkit-text-stroke-color: white;
     -webkit-text-fill-color: rgb(0, 87, 204);
-    text-align: center;
     cursor: pointer;
 }
 

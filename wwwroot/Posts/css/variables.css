@@ -2,4 +2,6 @@
     --borderRadius : 6px;
     --borderColor : #ccc;
     --panelPadding : 8px;
+    --cyan : rgb(16, 203, 255);
+    border: none;
    }

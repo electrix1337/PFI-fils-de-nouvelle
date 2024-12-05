@@ -1,0 +1,24 @@
+la protection de déconnection des usager
+
+
+let menuHtml = `<img src="news-logo-upload.png" class="appLogo" alt="" title="Fil de nouvelles">
+            <span id="viewTitle" class="viewTitle">Fil de nouvelles</span>
+            <i class="cmdIcon " id="hiddenIcon" title=""></i>
+            <i class="cmdIcon " id="hiddenIcon2" title=""></i>
+            <i class="cmdIcon fa fa-check" id="commit" title="Procéder"></i>
+            <i class="cmdIcon fa fa-search" id="showSearch" title="Recherche par mots-clés"></i>`;
+    if (user != null) {
+        menuHtml += `<i class="cmdIcon fa fa-plus" id="createPost" title="Ajouter une nouvelle"></i>`;
+    }
+    menuHtml += `<i class="cmdIcon fa fa-times" id="abort" title="Annuler"></i>
+        <div id="menu" class="dropdown ms-auto">
+            <div data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="cmdIcon fa fa-ellipsis-vertical"></i>
+            </div>
+            <div class="dropdown-menu noselect" id="DDMenu">
+                <div class="dropdown-item menuItemLayout" id="aboutCmd">
+                    <i class="menuIcon fa fa-info-circle mx-2"></i> À propos...
+                </div>
+            </div>
+        </div>`;
+    $("#header").html(menuHtml);

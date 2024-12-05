@@ -40,8 +40,8 @@
 .postHeader {
     color: blue;
     display: grid;
-    grid-template-columns: auto 30px 30px;
-    align-items: center;
+    grid-template-columns: auto 30px 30px 40px max-content;
+    align-items:start;
     height: 34px;
     text-transform: uppercase;
 }

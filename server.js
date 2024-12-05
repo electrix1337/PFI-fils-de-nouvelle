@@ -8,7 +8,14 @@
 import APIServer from "./APIServer.js";
 import RouteRegister from './routeRegister.js';
 
+//bookmarks
 RouteRegister.add('GET', 'Bookmarks', 'list');
+//likes
+RouteRegister.add('GET', 'likes', 'DeleteUser');
+RouteRegister.add('GET', 'likes', 'GetLiked');
+RouteRegister.add('GET', 'likes', 'SetLike');
+
+//accounts
 RouteRegister.add('GET', 'accounts');
 RouteRegister.add('POST', 'accounts', 'register');
 RouteRegister.add('GET', 'accounts', 'verify');
