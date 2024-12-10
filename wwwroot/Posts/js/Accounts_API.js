@@ -1,6 +1,6 @@
 
 class Accounts_API {
-    static API_URL() { return "http://localhost:5000/accounts" };
+    static API_URL() { return "http://localhost:5001/accounts" };
     static initHttpState() {
         this.currentHttpError = "";
         this.currentStatus = 0;
@@ -19,7 +19,7 @@ class Accounts_API {
         Accounts_API.initHttpState();
         return new Promise(resolve => {
             $.ajax({
-                url: "http://localhost:5000/token",
+                url: "http://localhost:5001/token",
                 type: "POST",
                 contentType: 'application/json',
                 data: JSON.stringify(data),

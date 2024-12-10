@@ -239,7 +239,8 @@ function updateMenu() {
 //////////////////////////// profile rendering /////////////////////////////////////////////////////////////
 
 function renderConnectionForm() {
-    $("#form").append(`
+    $("#viewTitle").html("Connexion");
+    $("#form").html(`
         <form class="form" id="postForm">
             <input 
                 class="form-control Email"
@@ -252,9 +253,10 @@ function renderConnectionForm() {
                 required
                 value=""
             />
+            <div class="errorMessage" id="errorEmail" style="display:none"></div>
             <input 
-                type='password'
-                class="form-control "
+                type="password"
+                class="form-control"
                 name="Password" 
                 id="Password" 
                 placeholder="Mot de passe"
@@ -263,6 +265,7 @@ function renderConnectionForm() {
                 InvalidMessage="Le mot de passe est invalide"
                 value=""
             />
+            <div class="errorMessage" id="errorPassword" style="display:none"></div>
             <div class="fullContent">
                 <input type="submit" value="Entrer" id="savePost" class="btn btn-primary">
                 <hr>
@@ -272,24 +275,17 @@ function renderConnectionForm() {
     `);
     initFormValidation();
 
-    $('#accept').on("click", async function () {
-        await Posts_API.Delete(post.Id);
-        if (!Posts_API.error) {
-            await showPosts();
-        }
-        else {
-            console.log(Posts_API.currentHttpError)
-            showError("Une erreur est survenue!");
-        }
-    });
-    $('#cancel').on("click", async function () {
-        await showPosts();
+    $('#createAccount').on("click", async function (event) {
+        showAccountForm();
     });
     $('#postForm').on("submit", async function (event) {
         event.preventDefault();
+        $("#errorEmail").hide();
+        $("#errorPassword").hide();
         let account = getFormData($("#postForm"));
         console.log(account);
         account = await Accounts_API.Login(account);
+        console.log(Accounts_API.error);
         if (!Accounts_API.error) {
             user = account;
             console.log(account);
@@ -297,24 +293,100 @@ function renderConnectionForm() {
             sessionStorage.setItem("Password", account.Password);
             updateMenu();
             await showPosts();
+        } else {
+            console.log(Accounts_API.currentStatus);
+            if (481 == Accounts_API.currentStatus) {
+                $("#errorEmail").html("L'adresse courriel n'existe pas");
+                $("#errorEmail").show();
+            } else if (482 == Accounts_API.currentStatus) {
+                $("#errorPassword").html("Le mot de passe n'est pas valide");
+                $("#errorPassword").show();
+            }
         }
     });
 }
 
+function newProfile() {
+    profile = {};
+    profile.Id = 0;
+    profile.Name = "";
+    profile.Phone = "";
+    profile.Email = "";
+    return profile;
+}
+
 function renderAccountForm() {
-    $("#form").append(`
+    $("#form").html(`
         <form class="form" id="postForm">
-            <input 
-                class="form-control Email"
-                name="Email"
-                id="Email"
-                placeholder="Adresse de courriel"
-                RequireMessage="Veuillez entrer un email"
-                InvalidMessage="votre réponse n'est pas un courriel"
-                CustomErrorMessage="Couriel introuvable"
-                required
-                value=""
-            />
+            <div class="formSection">
+                <div class="formSectionTitle">Adresse de courriel</div>
+                <input 
+                    class="form-control Email MatchedInput"
+                    name="Email"
+                    id="Email"
+                    placeholder="Courriel"
+                    RequireMessage="Veuillez entrer un email"
+                    InvalidMessage="votre réponse n'est pas un courriel"
+                    CustomErrorMessage="Couriel introuvable"
+                    required
+                    value=""
+                />
+                <input 
+                    class="form-control Email MatchedInput"
+                    name="Email"
+                    placeholder="Vérification"
+                    RequireMessage="Veuillez entrer un email"
+                    InvalidMessage="votre réponse n'est pas un courriel"
+                    CustomErrorMessage="Couriel introuvable"
+                    required
+                    value=""
+                />
+            </div>
+            <div class="formSection">
+                <div class="formSectionTitle">Mot de passe</div>
+                <input 
+                    type='password'
+                    class="form-control MatchedInput"
+                    name="Password" 
+                    id="Password" 
+                    placeholder="Mot de passe"
+                    required
+                    RequireMessage="Veuillez entrer un titre"
+                    InvalidMessage="Le mot de passe est invalide"
+                    value=""
+                />
+                <input 
+                    type='password'
+                    class="form-control MatchedInput"
+                    name="Password" 
+                    placeholder="Vérification"
+                    required
+                    RequireMessage="Veuillez entrer un titre"
+                    InvalidMessage="Le mot de passe est invalide"
+                    value=""
+                />
+            </div>
+            <div class="formSection">
+                <div class="formSectionTitle">Nom</div>
+                <input 
+                    class="form-control Alpha"
+                    name="Name" 
+                    id="Name" 
+                    placeholder="Nom"
+                    required
+                    RequireMessage="Veuillez entrer un titre"
+                    InvalidMessage="Le mot de passe est invalide"
+                    value=""
+                />
+            </div>
+            <div class="formSection">
+                <div class="formSectionTitle">Avatar</div>
+                <div class='imageUploader' 
+                   newImage='${create}' 
+                   controlId='Avatar' 
+                   imageSrc='${contact.Avatar}' 
+                   waitingImage="Loading_icon.gif">
+                </div>
             <input 
                 type='password'
                 class="form-control "
@@ -327,9 +399,8 @@ function renderAccountForm() {
                 value=""
             />
             <div class="fullContent">
-                <input type="submit" value="Entrer" id="savePost" class="btn btn-primary">
-                <hr>
-                <input type="button" value="Nouveau compte" id="createAccount" class="btn btn-primary buttonCyan">
+                <input type="submit" value="Enregistrer" id="savePost" class="btn btn-primary smallSpace buttonBlue">
+                <input type="button" value="Annuler" id="createAccount" class="btn btn-primary buttonGrey">
             </div>
         </form>
     `);
