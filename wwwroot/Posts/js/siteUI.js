@@ -46,11 +46,14 @@ async function Init_UI() {
 async function checkIfConnected() {
     let email = null;
     let password = null;
+    console.log(sessionStorage.getItem('Email'));
     if (sessionStorage.getItem('Email') != undefined) {
         email = sessionStorage.getItem('Email');
         if (sessionStorage.getItem('Password') != undefined) {
             password = sessionStorage.getItem('Password');
-            user = await Accounts_API.Login({ "Email": email, "Password": password });
+            console.log(await Accounts_API.Login({"Email": email, "Password": password}));
+            console.log({"Email": email, "Password": password});
+            user = await Accounts_API.Login({"Email": email, "Password": password});
             updateMenu();
             await showPosts();
         }
@@ -282,11 +285,10 @@ function renderConnectionForm() {
         $("#errorEmail").hide();
         $("#errorPassword").hide();
         let account = getFormData($("#postForm"));
-        accountData = await Accounts_API.Login(account);
+        let test = await Accounts_API.Login(account);
         if (!Accounts_API.error) {
-            user = accountData;
-            user.User.Password = account.Password;
-            sessionStorage.setItem("Email", account.Email);
+            user = test;
+            sessionStorage.setItem("Email", user.User.Email);
             sessionStorage.setItem("Password", account.Password);
             updateMenu();
             await showPosts();
@@ -313,6 +315,7 @@ function newProfile() {
 }
 
 function renderAccountForm() {
+    let profile = newProfile();
     $("#form").html(`
         <form class="form" id="postForm">
             <div class="formSection">
@@ -449,7 +452,7 @@ async function renderPosts(queryString) {
     removeWaitingGif();
     return endOfData;
 }
-function renderPost(post, loggedUser) {
+async function renderPost(post) {
     let date = convertToFrenchDate(UTC_To_Local(post.Date));
     let crudIcon = "";
     if (user != null) {
@@ -459,28 +462,26 @@ function renderPost(post, loggedUser) {
             <span class="deleteCmd cmdIconSmall fa fa-trash" postId="${post.Id}" title="Effacer nouvelle"></span>
             `;
     }
-
-    //likesection
     let likeSection = "";
     if (user != null) {
-        console.log(user);
-        userLiked = Likes_API.GetLiked(user.User.Id, post.Id);
-        if (!Likes_API.error) {
-            if (userLiked) {
-                likeSection =
-                    `
-                    <span class="fa-regular fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
-                    <span>0</span>
-                    `;
-            } else {
-                likeSection =
-                    `
-                    <span class="fa-solid fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
-                    <span>0</span>
-                    `;
-            }
+        //let userLiked = await Likes_API.GetLiked(user.User.Id, post.Id);
+
+        if (true) {
+            likeSection =
+                `
+                <span class="fa-solid fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
+                <span>0</span>
+                `;
+        } else {
+            likeSection =
+                `
+                <span class="fa-regular fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
+                <span>0</span>
+                `;
         }
     }
+
+    console.log("here");
 
     return $(`
         <div class="post" id="${post.Id}">
@@ -530,18 +531,18 @@ function updateDropDownMenu() {
             </div>
             `));
 
-        $('#connection').on("click", function () {
-            showConnection();
-        });
+            $('#connection').on("click", function() {
+                showConnection();
+            });
     } else {
-        if (user["isAdmin"]) {
+        if (user.User.isAdmin) {
             DDMenu.append($(`
                 <div class="dropdown-item menuItemLayout" id="gestionAdmin">
                     <i class="menuIcon mx-2 fa-solid fa-arrow-right-to-bracket"></i>Gestion des usagers
                 </div>
                 <div class="dropdown-divider"></div>
                 `));
-            $("#gestionAdmin").on("click", function () {
+            $("#gestionAdmin").on("click", function() {
                 renderUserManagement();
             });
         }
@@ -550,17 +551,17 @@ function updateDropDownMenu() {
             <div class="dropdown-item menuItemLayout" id="modifyProfil">
                 <i class="menuIcon mx-2 fa-solid fa-arrow-right-to-bracket"></i>Modifier votre profil
             </div>`));
-        $("#modifyProfil").on("click", function () {
+        $("#modifyProfil").on("click", function() {
             renderAccountForm();
         });
         DDMenu.append($(`
             <div class="dropdown-item menuItemLayout" id="logout">
                 <i class="menuIcon mx-2 fa-solid fa-arrow-right-to-bracket"></i>Déconnexion
             </div>`));
-        $("#logout").on("click", function () {
+        $("#logout").on("click", function() {
             sessionStorage.removeItem("Email");
             sessionStorage.removeItem("Password");
-            Accounts_API.Logout(user["Id"]);
+            Accounts_API.Logout(user.User.Id);
             user = null;
             updateMenu();
             showPosts();
@@ -610,13 +611,8 @@ function attach_Posts_UI_Events_Callback() {
     $(".editCmd").on("click", function () {
         showEditPostForm($(this).attr("postId"));
     });
-    $(".likeCmd").on("click", function () {
-        let likeChange = Likes_API.SetLike(user.User.Id, $(this).attr("postId"));
-        if (!Likes_API.error) {
-            
-        } else {
-            console.log("like data cant be get");
-        }
+    $(".likeCmd").on("click", function() {
+        Likes_API.SetLike(user.User.Id, $(this).attr("postId"));
     });
     $(".deleteCmd").off();
     $(".deleteCmd").on("click", function () {
@@ -739,7 +735,7 @@ async function renderDeletePostForm(id) {
                     await showPosts();
                 }
                 else {
-                    console.log(Posts_API.currentHttpError);
+                    console.log(Posts_API.currentHttpError)
                     showError("Une erreur est survenue!");
                 }
             });
@@ -770,7 +766,7 @@ function renderPostForm(post = null) {
         <form class="form" id="postForm">
             <input type="hidden" name="Id" value="${post.Id}"/>
              <input type="hidden" name="Date" value="${post.Date}"/>
-             <input type="hidden" name="CreatorId" value="${user.Id}"/>
+             <input type="hidden" name="CreatorId" value="${user.User.Id}"/>
             <label for="Category" class="form-label">Catégorie </label>
             <input 
                 class="form-control"

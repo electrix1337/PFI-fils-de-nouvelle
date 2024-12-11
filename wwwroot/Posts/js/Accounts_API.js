@@ -32,7 +32,7 @@ class Accounts_API {
         Accounts_API.initHttpState();
         return new Promise(resolve => {
             $.ajax({
-                url: Accounts_API.API_URL() + "/logout?" + idUser,
+                url: Accounts_API.API_URL() + "/logout?userId" + idUser,
                 type: "GET",
                 complete: data => { resolve({ ETag: data.getResponseHeader('ETag'), data: data.responseJSON }); },
                 error: (xhr) => { Accounts_API.setHttpErrorState(xhr); resolve(null); }

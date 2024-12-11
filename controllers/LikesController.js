@@ -7,7 +7,7 @@ import AccessControl from '../accessControl.js';
 
 export default class LikesController extends Controller {
     constructor(HttpContext) {
-        super(HttpContext, new Repository(new likeModel()));
+        super(HttpContext, new Repository(new likeModel(), AccessControl.user()));
     }
 
     deleteuser() {
@@ -80,7 +80,7 @@ export default class LikesController extends Controller {
                             }
                             return false;
                         });
-                        if (userLike.length >= 1) {
+                        if (userLike != null) {
                             this.repository.remove(userId, userLike);
                             this.HttpContext.response.JSON(false);
                         } else {

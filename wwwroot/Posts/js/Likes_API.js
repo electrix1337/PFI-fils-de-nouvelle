@@ -20,7 +20,7 @@ class Likes_API {
             $.ajax({
                 url: Likes_API.API_URL() + "/getliked?userId=" + userId + "&postId=" + postId,
                 type: "GET",
-                success: (data) => { resolve(data); console.log(data) },
+                success: (data) => { resolve(data); },
                 error: (xhr) => { Likes_API.setHttpErrorState(xhr); resolve(null); }
             });
         });
@@ -32,7 +32,7 @@ class Likes_API {
             $.ajax({
                 url: Likes_API.API_URL() + "/setlike?userId=" + userId + "&postId=" + postId,
                 type: "GET",
-                success: (data) => { resolve(data); console.log(data) },
+                success: (data) => { resolve(data); },
                 error: (xhr) => { Likes_API.setHttpErrorState(xhr); resolve(null); }
             });
         });
