@@ -1,4 +1,6 @@
 import UserModel from '../models/user.js';
+import LikeModel from '../models/like.js';
+import PostModel from '../models/post.js';
 import Repository from '../models/repository.js';
 import TokenManager from '../tokensManager.js';
 import * as utilities from "../utilities.js";
@@ -206,7 +208,13 @@ export default class AccountsController extends Controller {
     remove(id) { // warning! this is not an API endpoint 
         // todo make sure that the requester has legitimity to delete ethier itself or its an admin
         if (AccessControl.writeGrantedAdminOrOwner(this.HttpContext.authorizations, this.requiredAuthorizations, id)) {
-            // todo
+            let posts = new Repository(new PostModel());
+            let likes = new Repository(new LikeModel());
+
+            let likesData = likes.findByField("UserId", id);
+            let postsData = posts.findByField("CreatorId", id);
+            
+            
         }
     }
 }

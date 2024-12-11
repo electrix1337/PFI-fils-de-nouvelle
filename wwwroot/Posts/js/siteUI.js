@@ -46,14 +46,13 @@ async function Init_UI() {
 async function checkIfConnected() {
     let email = null;
     let password = null;
-    console.log(sessionStorage.getItem('Email'));
     if (sessionStorage.getItem('Email') != undefined) {
         email = sessionStorage.getItem('Email');
         if (sessionStorage.getItem('Password') != undefined) {
             password = sessionStorage.getItem('Password');
-            console.log(await Accounts_API.Login({"Email": email, "Password": password}));
-            console.log({"Email": email, "Password": password});
-            user = await Accounts_API.Login({"Email": email, "Password": password}).user;
+            user = await Accounts_API.Login({ "Email": email, "Password": password });
+            updateMenu();
+            await showPosts();
         }
     }
 
@@ -283,12 +282,10 @@ function renderConnectionForm() {
         $("#errorEmail").hide();
         $("#errorPassword").hide();
         let account = getFormData($("#postForm"));
-        console.log(account);
-        account = await Accounts_API.Login(account);
-        console.log(Accounts_API.error);
+        accountData = await Accounts_API.Login(account);
         if (!Accounts_API.error) {
-            user = account;
-            console.log(account);
+            user = accountData;
+            user.User.Password = account.Password;
             sessionStorage.setItem("Email", account.Email);
             sessionStorage.setItem("Password", account.Password);
             updateMenu();
@@ -462,14 +459,27 @@ function renderPost(post, loggedUser) {
             <span class="deleteCmd cmdIconSmall fa fa-trash" postId="${post.Id}" title="Effacer nouvelle"></span>
             `;
     }
+
+    //likesection
     let likeSection = "";
     if (user != null) {
-        userLiked = Likes_API.GetLiked(user.Id, post.Id);
-        likeSection =
-            `
-            <span class="fa-solid fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
-            <span>0</span>
-            `;
+        console.log(user);
+        userLiked = Likes_API.GetLiked(user.User.Id, post.Id);
+        if (!Likes_API.error) {
+            if (userLiked) {
+                likeSection =
+                    `
+                    <span class="fa-regular fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
+                    <span>0</span>
+                    `;
+            } else {
+                likeSection =
+                    `
+                    <span class="fa-solid fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
+                    <span>0</span>
+                    `;
+            }
+        }
     }
 
     return $(`
@@ -520,9 +530,9 @@ function updateDropDownMenu() {
             </div>
             `));
 
-            $('#connection').on("click", function() {
-                showConnection();
-            });
+        $('#connection').on("click", function () {
+            showConnection();
+        });
     } else {
         if (user["isAdmin"]) {
             DDMenu.append($(`
@@ -531,7 +541,7 @@ function updateDropDownMenu() {
                 </div>
                 <div class="dropdown-divider"></div>
                 `));
-            $("#gestionAdmin").on("click", function() {
+            $("#gestionAdmin").on("click", function () {
                 renderUserManagement();
             });
         }
@@ -540,14 +550,14 @@ function updateDropDownMenu() {
             <div class="dropdown-item menuItemLayout" id="modifyProfil">
                 <i class="menuIcon mx-2 fa-solid fa-arrow-right-to-bracket"></i>Modifier votre profil
             </div>`));
-        $("#modifyProfil").on("click", function() {
+        $("#modifyProfil").on("click", function () {
             renderAccountForm();
         });
         DDMenu.append($(`
             <div class="dropdown-item menuItemLayout" id="logout">
                 <i class="menuIcon mx-2 fa-solid fa-arrow-right-to-bracket"></i>Déconnexion
             </div>`));
-        $("#logout").on("click", function() {
+        $("#logout").on("click", function () {
             sessionStorage.removeItem("Email");
             sessionStorage.removeItem("Password");
             Accounts_API.Logout(user["Id"]);
@@ -600,9 +610,13 @@ function attach_Posts_UI_Events_Callback() {
     $(".editCmd").on("click", function () {
         showEditPostForm($(this).attr("postId"));
     });
-    $(".likeCmd").on("click", function() {
-        console.log(user);
-        Likes_API.SetLike(user.Id, $(this).attr("postId"));
+    $(".likeCmd").on("click", function () {
+        let likeChange = Likes_API.SetLike(user.User.Id, $(this).attr("postId"));
+        if (!Likes_API.error) {
+            
+        } else {
+            console.log("like data cant be get");
+        }
     });
     $(".deleteCmd").off();
     $(".deleteCmd").on("click", function () {
@@ -725,7 +739,7 @@ async function renderDeletePostForm(id) {
                     await showPosts();
                 }
                 else {
-                    console.log(Posts_API.currentHttpError)
+                    console.log(Posts_API.currentHttpError);
                     showError("Une erreur est survenue!");
                 }
             });
