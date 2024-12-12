@@ -89,7 +89,7 @@ export default class Model {
                         instance[field.name] = storedInstance[field.name];
                     }
                 } else {
-                    instance[field.name] = AssetsRepository.save(instance[field.name]);
+            instance[field.name] = AssetsRepository.save(instance[field.name]);
                     if (storedInstance != null) {
                         AssetsRepository.remove(storedInstance[field.name]);
                     }

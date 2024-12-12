@@ -25,6 +25,11 @@
     color:black;
 }
 
+.buttonRed {
+    background-color: red;
+    color:white;
+}
+
 .buttonGrey {
     background-color: rgb(80, 80, 80);
     color:white;

@@ -7,4 +7,4 @@ export default class Like extends Model {
         this.addField('UserId', 'string');
         this.addField('PostId', 'string');
     }
-}
+}//

@@ -53,5 +53,18 @@
         },
         "VerifyCode": "verified",
         "Id": "f11ee960-aa82-11ef-b942-e7f097a2ee7a"
+    },
+    {
+        "Email": "energie1000@outlook.com",
+        "Password": "password",
+        "Name": "FDAS",
+        "Avatar": "8fcb1561-b88f-11ef-b84c-b9589f463a86.png",
+        "Created": 1734011220,
+        "VerifyCode": "verified",
+        "Authorizations": {
+            "readAccess": 1,
+            "writeAccess": 1
+        },
+        "Id": "8fcb1560-b88f-11ef-b84c-b9589f463a86"
     }
 ]

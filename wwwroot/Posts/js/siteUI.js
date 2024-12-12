@@ -490,8 +490,8 @@ function renderAccountForm() {
     });
     $("#deleteAccount").on("click", function() {
         $("#form").html(`
-            <div class="bold">Voulez-vous vraiment effacer votre compte?</div>
             <div class="formSection">
+                <div class="bold">Voulez-vous vraiment effacer votre compte?</div>
                 <input type="button" value="Effacer mon compte" id="confirmDelete" class="btn btn-primary smallSpace buttonRed">
                 <input type="button" value="Annuler" id="cancelDelete" class="btn btn-primary smallSpace buttonGrey">
             </div>
