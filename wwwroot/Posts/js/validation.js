@@ -24,6 +24,10 @@ function initFormValidation() {
         $(this).attr("pattern", String.raw`^[a-zA-Z][0-9]+[a-zA-Z]\s[0-9]+[a-zA-Z][0-9]+$`);
         $(this).mask("a9a 9a9", { autoclear: false });
     });
+    $(".Number").each(function () {
+        $(this).attr("pattern", String.raw`^[0-9]*$`);
+    });
+
 
     $(".datepicker").each(function () {
         $(this).attr("pattern", String.raw`^\d\d\d\d-\d\d-\d\d$`);

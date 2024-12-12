@@ -316,10 +316,37 @@ function renderConnectionForm() {
         let account = getFormData($("#postForm"));
         let test = await Accounts_API.Login(account);
         if (!Accounts_API.error) {
-            user = test;
-            sessionStorage.setItem("Email", user.User.Email);
-            sessionStorage.setItem("Password", account.Password);
-            Login();
+            if (test.User.Verifycode == "verified") {
+                user = test;
+                sessionStorage.setItem("Email", user.User.Email);
+                sessionStorage.setItem("Password", account.Password);
+                Login();
+            } else {
+                $("#form").html(`
+                    <form class="form" id="postForm">
+                        <div class="formSection">
+                            <div class="bold">Veuillez entrer le code de vérification que vous avez reçus par courriel</div>
+                            <input 
+                                class="form-control Number"
+                                name="code" 
+                                id="code" 
+                                placeholder="Code de vérification de courriel"
+                                required
+                                RequireMessage="Veuillez entrer un titre"
+                                InvalidMessage="Le mot de passe est invalide"
+                                CustomErrorMessage="Couriel introuvable"
+                                value=""
+                            />
+                            <input type="submit" value="Vérifier" id="savePost" class="btn btn-primary">
+                        </div>
+                    </form>
+                    `);
+                $('#postForm').on("submit", async function (event) {
+                    event.preventDefault();
+                    let account = getFormData($("#postForm"));
+                    let test = await Accounts_API.Verify(account);
+                });
+            }
         } else {
             console.log(Accounts_API.currentStatus);
             if (481 == Accounts_API.currentStatus) {
@@ -442,7 +469,8 @@ function renderAccountForm() {
         let post = getFormData($("#postForm"));
         post = await Accounts_API.Register(post);
         if (!Posts_API.error) {
-            console.log("working4213");
+            showConnection();
+            $("#warningText").html("Votre compte a été créé. Veuillez prendre vos courriels pour récupérer votre code de vérification qui vous sera demandé lors de votre prochaine connextion.");
         }
         else
             showError("Une erreur est survenue! ", Posts_API.currentHttpError);
