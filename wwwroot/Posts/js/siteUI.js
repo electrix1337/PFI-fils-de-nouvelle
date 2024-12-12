@@ -348,10 +348,13 @@ function renderAccountForm() {
     let endButton = null;
     if (create) {
         account = newProfile();
+        account.Avatar = "images/no-avatar.png";
         endButton = '<input type="button" value="Annuler" id="createAccount" class="btn btn-primary buttonGrey"></input>';
+        $("#viewTitle").html("Inscription");
     } else {
         account = user.User;
         endButton = '<input type="button" value="Effacer le compte" id="deleteAccount" class="btn btn-primary buttonYellow"></input>';
+        $("#viewTitle").html("Modification");
     }
     $("#form").html(`
         <form class="form" id="postForm">
@@ -432,9 +435,17 @@ function renderAccountForm() {
     `);
     initImageUploaders();
     if (create) {
-        addConflictValidation("")
+        addConflictValidation("");
     }
-    $("#savePost").on("click", function() {
+    $("#postForm").on("submit", async function(event) {
+        event.preventDefault();
+        let post = getFormData($("#postForm"));
+        post = await Accounts_API.Register(post);
+        if (!Posts_API.error) {
+            console.log("working4213");
+        }
+        else
+            showError("Une erreur est survenue! ", Posts_API.currentHttpError);
 
     });
     $("#deleteAccount").on("click", function() {

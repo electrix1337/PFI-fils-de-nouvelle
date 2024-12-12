@@ -118,6 +118,7 @@ export default class AccountsController extends Controller {
     // POST: account/register body payload[{"Id": 0, "Name": "...", "Email": "...", "Password": "..."}]
     register(user) {
         if (this.repository != null) {
+            user.Id = this.repository.createId();
             user.Created = utilities.nowInSeconds();
             let verifyCode = utilities.makeVerifyCode(6);
             user.VerifyCode = verifyCode;

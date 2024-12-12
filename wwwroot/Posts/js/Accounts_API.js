@@ -28,6 +28,19 @@ class Accounts_API {
             });
         });
     }
+    static async Register(data) {
+        Accounts_API.initHttpState();
+        return new Promise(resolve => {
+            $.ajax({
+                url: Accounts_API.Root() + "/accounts/register",
+                type: "POST",
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: (data) => { resolve(data); },
+                error: (xhr) => { Accounts_API.setHttpErrorState(xhr); resolve(null); console.log(xhr); }
+            });
+        });
+    }
     static async DeleteAccount(userId) {
         Accounts_API.initHttpState();
         console.log("test");

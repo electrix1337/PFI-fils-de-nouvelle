@@ -20,6 +20,10 @@
     background-color: rgb(0, 119, 255);
     color:white;
 }
+.buttonYellow {
+    background-color: yellow;
+    color:black;
+}
 
 .buttonGrey {
     background-color: rgb(80, 80, 80);
