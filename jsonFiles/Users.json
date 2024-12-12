@@ -53,18 +53,5 @@
         },
         "VerifyCode": "verified",
         "Id": "f11ee960-aa82-11ef-b942-e7f097a2ee7a"
-    },
-    {
-        "Id": "b1692480-b85a-11ef-ad0e-5dbb7a325b0e",
-        "Email": "energie1000@outlook.com",
-        "Password": "password",
-        "Name": "fdsa",
-        "Avatar": "b1694b90-b85a-11ef-ad0e-5dbb7a325b0e.png",
-        "Created": 1733988513,
-        "VerifyCode": 322636,
-        "Authorizations": {
-            "readAccess": 1,
-            "writeAccess": 1
-        }
     }
 ]

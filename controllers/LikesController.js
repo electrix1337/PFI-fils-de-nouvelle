@@ -76,11 +76,11 @@ export default class LikesController extends Controller {
                 let usersTab = [];
                 let usersRepos = new Repository(new userModel());
                 for (var userLike in userLikes) {
-                    let user = usersRepos.findByField("Id", userLikes[userLike].UserId).Name;
+                    let user = usersRepos.findByField("Id", userLikes[userLike].UserId);
                     if (user == null) {
                         this.repository.remove(userLikes[userLike].Id);
                     } else {
-                        usersTab.push(user);
+                        usersTab.push(user.Name);
                     }
                 }
                 this.HttpContext.response.JSON(usersTab);

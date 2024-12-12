@@ -26,6 +26,7 @@ function initFormValidation() {
     });
     $(".Number").each(function () {
         $(this).attr("pattern", String.raw`^[0-9]*$`);
+        $(this).mask("999999", { autoclear: false });
     });
 
 

@@ -54,14 +54,13 @@ class Accounts_API {
             });
         });
     }
-    static async Verify(data) {
+    static async Verify(userId, verifyCode) {
         Accounts_API.initHttpState();
         return new Promise(resolve => {
             $.ajax({
-                url: Accounts_API.Root() + "/token",
-                type: "POST",
+                url: Accounts_API.Root() + "/accounts/verify?Id=" + userId + "&code=" + verifyCode,
+                type: "GET",
                 contentType: 'application/json',
-                data: JSON.stringify(data),
                 success: (data) => { resolve(data); },
                 error: (xhr) => { Accounts_API.setHttpErrorState(xhr); resolve(null); console.log(xhr); }
             });

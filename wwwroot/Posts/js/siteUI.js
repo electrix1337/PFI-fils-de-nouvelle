@@ -316,7 +316,8 @@ function renderConnectionForm() {
         let account = getFormData($("#postForm"));
         let test = await Accounts_API.Login(account);
         if (!Accounts_API.error) {
-            if (test.User.Verifycode == "verified") {
+            console.log(test.User);
+            if (test.User.VerifyCode == "verified") {
                 user = test;
                 sessionStorage.setItem("Email", user.User.Email);
                 sessionStorage.setItem("Password", account.Password);
@@ -332,19 +333,30 @@ function renderConnectionForm() {
                                 id="code" 
                                 placeholder="Code de vérification de courriel"
                                 required
-                                RequireMessage="Veuillez entrer un titre"
-                                InvalidMessage="Le mot de passe est invalide"
-                                CustomErrorMessage="Couriel introuvable"
+                                RequireMessage="Veuillez entrer un code de vérification"
+                                InvalidMessage="Le code de vérification n'est pas des chiffres"
                                 value=""
                             />
                             <input type="submit" value="Vérifier" id="savePost" class="btn btn-primary">
                         </div>
                     </form>
                     `);
+                initFormValidation();
+
+                let userId = test.User.Id;
+                
                 $('#postForm').on("submit", async function (event) {
                     event.preventDefault();
-                    let account = getFormData($("#postForm"));
-                    let test = await Accounts_API.Verify(account);
+                    let post = getFormData($("#postForm"));
+                    let test = await Accounts_API.Verify(userId, post.code);
+                    if (!Accounts_API.error) {
+                        console.log("codeVerified");
+                        user = test;
+                        sessionStorage.setItem("Email", user.User.Email);
+                        sessionStorage.setItem("Password", account.Password);
+                        Login();
+                    }
+
                 });
             }
         } else {

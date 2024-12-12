@@ -79,7 +79,7 @@ export default class AccountsController extends Controller {
     //GET : /accounts/verify?id=...&code=.....
     verify() {
         if (this.repository != null) {
-            let id = this.HttpContext.path.params.id;
+            let id = this.HttpContext.path.params.Id;
             let code = parseInt(this.HttpContext.path.params.code);
             let userFound = this.repository.findByField('Id', id);
             if (userFound) {
@@ -88,7 +88,8 @@ export default class AccountsController extends Controller {
                     this.repository.update(userFound.Id, userFound);
                     if (this.repository.model.state.isValid) {
                         userFound = this.repository.get(userFound.Id); // get data binded record
-                        this.HttpContext.response.JSON(userFound);
+                        let newToken = TokenManager.create(userFound);
+                        this.HttpContext.response.created(newToken);
                         this.sendConfirmedEmail(userFound);
                     } else {
                         this.HttpContext.response.unprocessable();
@@ -126,7 +127,7 @@ export default class AccountsController extends Controller {
             let newUser = this.repository.add(user);
             if (this.repository.model.state.isValid) {
                 this.HttpContext.response.created(newUser);
-                newUser.Verifycode = verifyCode;
+                newUser.VerifyCode = verifyCode;
                 this.sendVerificationEmail(newUser);
             } else {
                 if (this.repository.model.state.inConflict)
@@ -184,6 +185,9 @@ export default class AccountsController extends Controller {
                     } else {
                         user.VerifyCode = foundedUser.VerifyCode;
                     }
+                    if (foundedUser.Avatar != user.Avatar) {
+                        
+                    }
                     this.repository.update(user.Id, user);
                     let updatedUser = this.repository.get(user.Id); // must get record user.id with binded data
 
@@ -223,6 +227,7 @@ export default class AccountsController extends Controller {
                     posts.remove(object.Id);
                 }
             });
+            this.HttpContext.response.JSON(true);
         } else {
             this.HttpContext.response.unAuthorized();
         }
