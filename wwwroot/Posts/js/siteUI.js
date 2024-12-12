@@ -21,13 +21,14 @@ const timoutTime = 300;
 Init_UI();
 async function Init_UI() {
     initTimeout(timoutTime, RedirectToConnection);
-    checkIfConnected();
-    postsPanel = new PageManager('postsScrollPanel', 'postsPanel', 'postSample', renderPosts);
-    updateMenu();
+    checkIfConnected().then(async () => {
+        postsPanel = new PageManager('postsScrollPanel', 'postsPanel', 'postSample', renderPosts);
+        updateMenu();
 
-    installKeywordsOnkeyupEvent();
-    await showPosts();
-    start_Periodic_Refresh();
+        installKeywordsOnkeyupEvent();
+        await showPosts();
+        start_Periodic_Refresh();
+    });
 }
 
 /////////////////////////// user session ////////////////////////////////////////////////////////////////
@@ -41,7 +42,7 @@ async function checkIfConnected() {
             password = sessionStorage.getItem('Password');
             console.log(await Accounts_API.Login({"Email": email, "Password": password}));
             user = await Accounts_API.Login({"Email": email, "Password": password});
-            Login();
+            startCountdown();
         }
     }
 }
@@ -259,6 +260,7 @@ async function Login() {
 }
 
 async function RedirectToConnection() {
+    console.log("test");
     Logout();
     updateMenu();
     showConnection();
@@ -429,6 +431,9 @@ function renderAccountForm() {
         </form>
     `);
     initImageUploaders();
+    if (create) {
+        addConflictValidation("")
+    }
     $("#savePost").on("click", function() {
 
     });
@@ -441,6 +446,7 @@ function renderAccountForm() {
             </div>
             `);
         $("#confirmDelete").on("click", function() {
+            console.log(user);
             Accounts_API.DeleteAccount(user.User.Id);
             sessionStorage.removeItem("Email");
             sessionStorage.removeItem("Password");
@@ -513,6 +519,7 @@ async function renderPosts(queryString) {
         if (keys !== "")
             queryString += "&keywords=" + $("#searchKeys").val().replace(/[ ]/g, ',')
     }
+    console.log("render");
     addWaitingGif();
     let response = await Posts_API.Get(queryString);
     if (!Posts_API.error) {
@@ -522,9 +529,13 @@ async function renderPosts(queryString) {
             for (var post of Posts) {
                 postsPanel.itemsPanel.append(await renderPost(post));
                 let postId = "#like-" + post.Id;
+                let userId = "";
+                if (user != null) {
+                    userId = user.User.Id;
+                }
                 $(postId).on("click", async function() {
-                    console.log(user.User.Id + "  " +  $(this).attr("postId"))
-                    let userLiked = await Likes_API.GetLiked(user.User.Id, $(this).attr("postId"));
+                    console.log(userId + "  " +  $(this).attr("postId"))
+                    let userLiked = await Likes_API.GetLiked(userId, $(this).attr("postId"));
                     console.log(userLiked);
                     if (userLiked) {
                         $(this).removeClass("fa-solid fa-thumbs-up");
@@ -534,16 +545,16 @@ async function renderPosts(queryString) {
                         $(this).addClass("fa-solid fa-thumbs-up");
                     }
             
-                    Likes_API.SetLike(user.User.Id, $(this).attr("postId"));
+                    Likes_API.SetLike(userId, $(this).attr("postId"));
             
                     let likeCount = await Likes_API.GetLikesFromPost($(this).attr("postId"));
                     let postId = "#post-" + $(this).attr("postId");
-                    $(postId).html(likeCount);
+                    $(postId).html(likeCount.length);
                     let likeStr = "";
-                    for (var user in usersLike) {
-                        likeStr += user.Name;
+                    for (var userLike in likeCount) {
+                        likeStr += likeCount[userLike] + "\n";
                     }
-                    $(postId).prop("title", "");
+                    $(postId).prop("title", likeStr);
                 });
             }
         } else
@@ -579,17 +590,22 @@ async function renderPost(post) {
         let userLiked = await Likes_API.GetLiked(user.User.Id, post.Id);
         let likeCount = await Likes_API.GetLikesFromPost(post.Id);
 
+        let likeStr = "";
+        for (var userLike in likeCount) {
+            likeStr += likeCount[userLike] + "\n";
+        }
+
         if (userLiked) {
             likeSection =
                 `
                 <span id="like-${post.Id}" class="fa-solid fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
-                <span title="" id="post-${post.Id}">${likeCount}</span>
+                <span title="${likeStr}" id="post-${post.Id}">${likeCount.length}</span>
                 `;
         } else {
             likeSection =
                 `
                 <span id="like-${post.Id}" class="fa-regular fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
-                <span title="" id="post-${post.Id}">0</span>
+                <span title="${likeStr}" id="post-${post.Id}">0</span>
                 `;
         }
     }

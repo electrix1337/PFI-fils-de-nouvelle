@@ -67,7 +67,6 @@ export default class LikesController extends Controller {
             let postsRepos = new Repository(new postsModel());
             let post = postsRepos.findByField("Id", postId);
             if (post) {
-                let usersRepos = new Repository(new userModel());
                 let userLikes = this.repository.findByFilter((object) => {
                     if (object.PostId == postId) {
                         return true;
@@ -75,8 +74,14 @@ export default class LikesController extends Controller {
                     return false;
                 });
                 let usersTab = [];
+                let usersRepos = new Repository(new userModel());
                 for (var userLike in userLikes) {
-                    usersTab.push(usersRepos.findByField("Id", userLike.UserId).Name);
+                    let user = usersRepos.findByField("Id", userLikes[userLike].UserId).Name;
+                    if (user == null) {
+                        this.repository.remove(userLikes[userLike].Id);
+                    } else {
+                        usersTab.push(user);
+                    }
                 }
                 this.HttpContext.response.JSON(usersTab);
             } else {

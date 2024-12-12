@@ -35,7 +35,6 @@ export default class AccountsController extends Controller {
                     if (user.Password == loginInfo.Password) {
                         user = this.repository.get(user.Id);
                         let newToken = TokenManager.create(user);
-                        this.HttpContext.Authorizations = user.Authorizations;
                         this.HttpContext.response.created(newToken);
                     } else {
                         this.HttpContext.response.wrongPassword("Wrong password.");
@@ -106,11 +105,10 @@ export default class AccountsController extends Controller {
     //GET : /accounts/conflict?Id=...&Email=.....
     conflict() {
         if (this.repository != null) {
-            let id = this.HttpContext.path.params.Id;
             let email = this.HttpContext.path.params.Email;
-            if (id && email) {
-                let prototype = { Id: id, Email: email };
-                this.HttpContext.response.JSON(this.repository.checkConflict(prototype));
+            if (email) {
+                let user = this.repository.findByField("Email", email);
+                this.HttpContext.response.JSON(this.repository.checkConflict(user == null));
             } else
                 this.HttpContext.response.JSON(false);
         } else
@@ -208,7 +206,8 @@ export default class AccountsController extends Controller {
     deleteuser() {
         let id = this.HttpContext.path.params.userId;
         // todo make sure that the requester has legitimity to delete ethier itself or its an admin
-        if (AccessControl.writeGrantedAdminOrOwner(this.HttpContext.authorizations, AccessControl.user(), id)) {
+        let userToken = TokenManager.findUserToken(id);
+        if (AccessControl.writeGrantedAdminOrOwner(userToken.User, AccessControl.user(), id)) {
             let posts = new Repository(new PostModel());
             let likes = new Repository(new LikeModel());
             this.repository.remove(id);
@@ -223,6 +222,8 @@ export default class AccountsController extends Controller {
                     posts.remove(object.Id);
                 }
             });
+        } else {
+            this.HttpContext.response.unAuthorized();
         }
     }
     // GET:account/remove/id

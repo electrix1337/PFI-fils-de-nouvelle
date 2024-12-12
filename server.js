@@ -11,7 +11,7 @@ import RouteRegister from './routeRegister.js';
 //bookmarks
 RouteRegister.add('GET', 'Bookmarks', 'list');
 //likes
-RouteRegister.add('GET', 'likes', 'DeleteUser');
+RouteRegister.add('GET', 'likes', 'deleteuser');
 RouteRegister.add('GET', 'likes', 'getliked');
 RouteRegister.add('GET', 'likes', 'getlikesfrompost');
 RouteRegister.add('GET', 'likes', 'setlike');
