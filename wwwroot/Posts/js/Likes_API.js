@@ -1,5 +1,5 @@
 class Likes_API {
-    static API_URL() { return "http://localhost:5001/likes" };
+    static API_URL() { return "http://localhost:5002/likes" };
     static initHttpState() {
         this.currentHttpError = "";
         this.currentStatus = 0;
@@ -31,6 +31,17 @@ class Likes_API {
         return new Promise(resolve => {
             $.ajax({
                 url: Likes_API.API_URL() + "/setlike?userId=" + userId + "&postId=" + postId,
+                type: "GET",
+                success: (data) => { resolve(data); },
+                error: (xhr) => { Likes_API.setHttpErrorState(xhr); resolve(null); }
+            });
+        });
+    }
+    static async GetLikesFromPost(postId) {
+        Likes_API.initHttpState();
+        return new Promise(resolve => {
+            $.ajax({
+                url: Likes_API.API_URL() + "/getlikesfrompost?postId=" + postId,
                 type: "GET",
                 success: (data) => { resolve(data); },
                 error: (xhr) => { Likes_API.setHttpErrorState(xhr); resolve(null); }

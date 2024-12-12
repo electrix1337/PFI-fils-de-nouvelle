@@ -1,6 +1,6 @@
 
 class Accounts_API {
-    static API_URL() { return "http://localhost:5001/accounts" };
+    static Root() { return "http://localhost:5002" };
     static initHttpState() {
         this.currentHttpError = "";
         this.currentStatus = 0;
@@ -19,7 +19,33 @@ class Accounts_API {
         Accounts_API.initHttpState();
         return new Promise(resolve => {
             $.ajax({
-                url: "http://localhost:5001/token",
+                url: Accounts_API.Root() + "/token",
+                type: "POST",
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: (data) => { resolve(data); },
+                error: (xhr) => { Accounts_API.setHttpErrorState(xhr); resolve(null); console.log(xhr); }
+            });
+        });
+    }
+    static async DeleteAccount(userId) {
+        Accounts_API.initHttpState();
+        console.log("test");
+        return new Promise(resolve => {
+            $.ajax({
+                url: Accounts_API.Root() + "/accounts/deleteuser?userId=" + userId,
+                type: "GET",
+                contentType: 'application/json',
+                success: (data) => { resolve(data); },
+                error: (xhr) => { Accounts_API.setHttpErrorState(xhr); resolve(null); console.log(xhr); }
+            });
+        });
+    }
+    static async Verify(data) {
+        Accounts_API.initHttpState();
+        return new Promise(resolve => {
+            $.ajax({
+                url: Accounts_API.Root() + "/token",
                 type: "POST",
                 contentType: 'application/json',
                 data: JSON.stringify(data),
@@ -32,9 +58,10 @@ class Accounts_API {
         Accounts_API.initHttpState();
         return new Promise(resolve => {
             $.ajax({
-                url: Accounts_API.API_URL() + "/logout?userId" + idUser,
+                url: Accounts_API.Root() + "/accounts/logout?userId=" + idUser,
                 type: "GET",
-                complete: data => { resolve({ ETag: data.getResponseHeader('ETag'), data: data.responseJSON }); },
+                contentType: 'application/json',
+                success: data => { resolve(data); },
                 error: (xhr) => { Accounts_API.setHttpErrorState(xhr); resolve(null); }
             });
         });

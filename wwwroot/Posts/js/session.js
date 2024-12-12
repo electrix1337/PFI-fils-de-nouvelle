@@ -25,6 +25,7 @@ function initTimeout(stallingTime = infinite, callback = timeoutCallBack) {
     timeoutCallBack = callback;
     createTimeoutPopup();
     initialized = true;
+    noTimeout();
 }
 function noTimeout() {
     $(".popup").hide();

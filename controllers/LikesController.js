@@ -37,7 +37,7 @@ export default class LikesController extends Controller {
                     if (post) {
                         let userLike = this.repository.findByFilter((object) => {
                             if (object.UserId == userId) {
-                                if (object.postId == postId) {
+                                if (object.PostId == postId) {
                                     return true;
                                 }
                             }
@@ -61,6 +61,31 @@ export default class LikesController extends Controller {
             this.HttpContext.response.badRequest("The userId is not set.");
         }
     } 
+    getlikesfrompost() {
+        let postId = this.HttpContext.path.params.postId;
+        if (postId) {
+            let postsRepos = new Repository(new postsModel());
+            let post = postsRepos.findByField("Id", postId);
+            if (post) {
+                let usersRepos = new Repository(new userModel());
+                let userLikes = this.repository.findByFilter((object) => {
+                    if (object.PostId == postId) {
+                        return true;
+                    }
+                    return false;
+                });
+                let usersTab = [];
+                for (var userLike in userLikes) {
+                    usersTab.push(usersRepos.findByField("Id", userLike.UserId).Name);
+                }
+                this.HttpContext.response.JSON(usersTab);
+            } else {
+                this.HttpContext.response.badRequest("The post don't exist.");
+            }
+        } else {
+            this.HttpContext.response.badRequest("The postId is not set.");
+        }
+    }
     setlike() {
         let userId = this.HttpContext.path.params.userId;
         let postId = this.HttpContext.path.params.postId;
@@ -74,19 +99,23 @@ export default class LikesController extends Controller {
                     if (post) {
                         let userLike = this.repository.findByFilter((object) => {
                             if (object.UserId == userId) {
-                                if (object.postId == postId) {
+                                if (object.PostId == postId) {
                                     return true;
                                 }
                             }
                             return false;
                         });
-                        if (userLike != null) {
-                            this.repository.remove(userId, userLike);
+                        if (userLike.length >= 1) {
+                            this.repository.remove(userLike[0].Id);
                             this.HttpContext.response.JSON(false);
                         } else {
                             let newLike = {"UserId" : userId, "PostId" : postId};
-                            let usertest = this.repository.add(newLike);
-                            this.HttpContext.response.JSON(true);
+                            let like = this.repository.add(newLike);
+                            if (this.repository.model.state.isValid) {
+                                this.HttpContext.response.created(like);
+                            } else {
+                                this.HttpContext.response.JSON(true);
+                            }
                         }
                     } else {
                         this.HttpContext.response.badRequest("The post don't exist.");

@@ -16,25 +16,14 @@ let waiting = null;
 let showKeywords = false;
 let keywordsOnchangeTimger = null;
 let user = null;
+const timoutTime = 300;
 
 Init_UI();
 async function Init_UI() {
+    initTimeout(timoutTime, RedirectToConnection);
     checkIfConnected();
     postsPanel = new PageManager('postsScrollPanel', 'postsPanel', 'postSample', renderPosts);
     updateMenu();
-    $('#createPost').on("click", async function () {
-        showCreatePostForm();
-    });
-    $('#abort').on("click", async function () {
-        showPosts();
-    });
-    $('#aboutCmd').on("click", function () {
-        showAbout();
-    });
-    $("#showSearch").on('click', function () {
-        toogleShowKeywords();
-        showPosts();
-    });
 
     installKeywordsOnkeyupEvent();
     await showPosts();
@@ -46,19 +35,15 @@ async function Init_UI() {
 async function checkIfConnected() {
     let email = null;
     let password = null;
-    console.log(sessionStorage.getItem('Email'));
     if (sessionStorage.getItem('Email') != undefined) {
         email = sessionStorage.getItem('Email');
         if (sessionStorage.getItem('Password') != undefined) {
             password = sessionStorage.getItem('Password');
             console.log(await Accounts_API.Login({"Email": email, "Password": password}));
-            console.log({"Email": email, "Password": password});
             user = await Accounts_API.Login({"Email": email, "Password": password});
-            updateMenu();
-            await showPosts();
+            Login();
         }
     }
-
 }
 
 /////////////////////////// Search keywords UI //////////////////////////////////////////////////////////
@@ -195,8 +180,13 @@ function showAbout() {
 }
 
 function showConnection() {
+    console.log("working");
     hidePosts();
+    hideSearchIcon();
     $("#form").show();
+    $("#commit").hide();
+    $("#showSearch").hide();
+    $("#menu").hide();
     $('#abort').show();
     renderConnectionForm();
 }
@@ -233,6 +223,20 @@ function updateMenu() {
             </div>
         </div>`;
     $("#header").html(menuHtml);
+
+    $('#createPost').on("click", async function () {
+        showCreatePostForm();
+    });
+    $('#abort').on("click", async function () {
+        showPosts();
+    });
+    $('#aboutCmd').on("click", function () {
+        showAbout();
+    });
+    $("#showSearch").on('click', function () {
+        toogleShowKeywords();
+        showPosts();
+    });
 }
 
 
@@ -240,10 +244,32 @@ function updateMenu() {
 
 //////////////////////////// profile rendering /////////////////////////////////////////////////////////////
 
+function Logout() {
+    sessionStorage.removeItem("Email");
+    sessionStorage.removeItem("Password");
+    Accounts_API.Logout(user.User.Id);
+    user = null;
+    noTimeout();
+}
+
+async function Login() {
+    updateMenu();
+    await showPosts();
+    startCountdown();
+}
+
+async function RedirectToConnection() {
+    Logout();
+    updateMenu();
+    showConnection();
+    $("#warningText").html("Votre session est expirée. Veuillez vous reconnecter.");
+}
+
 function renderConnectionForm() {
     $("#viewTitle").html("Connexion");
     $("#form").html(`
         <form class="form" id="postForm">
+            <div class="redText" id="warningText"></div>
             <input 
                 class="form-control Email"
                 name="Email"
@@ -277,7 +303,8 @@ function renderConnectionForm() {
     `);
     initFormValidation();
 
-    $('#createAccount').on("click", async function (event) {
+    $('#createAccount').on("click", function (event) {
+        console.log("test");
         showAccountForm();
     });
     $('#postForm').on("submit", async function (event) {
@@ -290,8 +317,7 @@ function renderConnectionForm() {
             user = test;
             sessionStorage.setItem("Email", user.User.Email);
             sessionStorage.setItem("Password", account.Password);
-            updateMenu();
-            await showPosts();
+            Login();
         } else {
             console.log(Accounts_API.currentStatus);
             if (481 == Accounts_API.currentStatus) {
@@ -315,7 +341,16 @@ function newProfile() {
 }
 
 function renderAccountForm() {
-    let profile = newProfile();
+    let create = user == null;
+    let account = null;
+    let endButton = null;
+    if (create) {
+        account = newProfile();
+        endButton = '<input type="button" value="Annuler" id="createAccount" class="btn btn-primary buttonGrey"></input>';
+    } else {
+        account = user.User;
+        endButton = '<input type="button" value="Effacer le compte" id="deleteAccount" class="btn btn-primary buttonYellow"></input>';
+    }
     $("#form").html(`
         <form class="form" id="postForm">
             <div class="formSection">
@@ -329,7 +364,7 @@ function renderAccountForm() {
                     InvalidMessage="votre réponse n'est pas un courriel"
                     CustomErrorMessage="Couriel introuvable"
                     required
-                    value=""
+                    value="${account.Email}"
                 />
                 <input 
                     class="form-control Email MatchedInput"
@@ -339,7 +374,7 @@ function renderAccountForm() {
                     InvalidMessage="votre réponse n'est pas un courriel"
                     CustomErrorMessage="Couriel introuvable"
                     required
-                    value=""
+                    value="${account.Email}"
                 />
             </div>
             <div class="formSection">
@@ -376,7 +411,7 @@ function renderAccountForm() {
                     required
                     RequireMessage="Veuillez entrer un titre"
                     InvalidMessage="Le mot de passe est invalide"
-                    value=""
+                    value="${account.Name}"
                 />
             </div>
             <div class="formSection">
@@ -384,26 +419,71 @@ function renderAccountForm() {
                 <div class='imageUploader' 
                    newImage='${create}' 
                    controlId='Avatar' 
-                   imageSrc='${contact.Avatar}' 
+                   imageSrc='${account.Avatar}' 
                    waitingImage="Loading_icon.gif">
                 </div>
-            <input 
-                type='password'
-                class="form-control "
-                name="Password" 
-                id="Password" 
-                placeholder="Mot de passe"
-                required
-                RequireMessage="Veuillez entrer un titre"
-                InvalidMessage="Le mot de passe est invalide"
-                value=""
-            />
             <div class="fullContent">
                 <input type="submit" value="Enregistrer" id="savePost" class="btn btn-primary smallSpace buttonBlue">
-                <input type="button" value="Annuler" id="createAccount" class="btn btn-primary buttonGrey">
+                ${endButton}
             </div>
         </form>
     `);
+    initImageUploaders();
+    $("#savePost").on("click", function() {
+
+    });
+    $("#deleteAccount").on("click", function() {
+        $("#form").html(`
+            <div class="bold">Voulez-vous vraiment effacer votre compte?</div>
+            <div class="formSection">
+                <input type="button" value="Effacer mon compte" id="confirmDelete" class="btn btn-primary smallSpace buttonRed">
+                <input type="button" value="Annuler" id="cancelDelete" class="btn btn-primary smallSpace buttonGrey">
+            </div>
+            `);
+        $("#confirmDelete").on("click", function() {
+            Accounts_API.DeleteAccount(user.User.Id);
+            sessionStorage.removeItem("Email");
+            sessionStorage.removeItem("Password");
+            Accounts_API.Logout(user.User.Id);
+            user = null;
+            updateMenu();
+            showPosts();
+        });
+        $("#cancelDelete").on("click", function() {
+            renderAccountForm();
+        });
+    });
+}
+
+function renderEmailVerification() {
+    $("#form").html(`
+        <form class="form" id="postForm">
+            <div class="formSection">
+                <div class="formSectionTitle">Adresse de courriel</div>
+                <input 
+                    class="form-control Email MatchedInput"
+                    name="Email"
+                    id="Email"
+                    placeholder="Courriel"
+                    RequireMessage="Veuillez entrer un email"
+                    InvalidMessage="votre réponse n'est pas un courriel"
+                    CustomErrorMessage="Couriel introuvable"
+                    required
+                    value=""
+                />
+                <input 
+                    class="form-control Email MatchedInput"
+                    name="Email"
+                    placeholder="Vérification"
+                    RequireMessage="Veuillez entrer un email"
+                    InvalidMessage="votre réponse n'est pas un courriel"
+                    CustomErrorMessage="Couriel introuvable"
+                    required
+                    value=""
+                />
+            </div>
+        </form>
+        `);
 }
 
 //////////////////////////// Posts rendering /////////////////////////////////////////////////////////////
@@ -422,6 +502,7 @@ function start_Periodic_Refresh() {
     },
         periodicRefreshPeriod * 1000);
 }
+
 async function renderPosts(queryString) {
     let endOfData = false;
     queryString += "&sort=date,desc";
@@ -438,9 +519,33 @@ async function renderPosts(queryString) {
         currentETag = response.ETag;
         let Posts = response.data;
         if (Posts.length > 0) {
-            Posts.forEach(Post => {
-                postsPanel.itemsPanel.append(renderPost(Post));
-            });
+            for (var post of Posts) {
+                postsPanel.itemsPanel.append(await renderPost(post));
+                let postId = "#like-" + post.Id;
+                $(postId).on("click", async function() {
+                    console.log(user.User.Id + "  " +  $(this).attr("postId"))
+                    let userLiked = await Likes_API.GetLiked(user.User.Id, $(this).attr("postId"));
+                    console.log(userLiked);
+                    if (userLiked) {
+                        $(this).removeClass("fa-solid fa-thumbs-up");
+                        $(this).addClass("fa-regular fa-thumbs-up");
+                    } else {
+                        $(this).removeClass("fa-regular fa-thumbs-up");
+                        $(this).addClass("fa-solid fa-thumbs-up");
+                    }
+            
+                    Likes_API.SetLike(user.User.Id, $(this).attr("postId"));
+            
+                    let likeCount = await Likes_API.GetLikesFromPost($(this).attr("postId"));
+                    let postId = "#post-" + $(this).attr("postId");
+                    $(postId).html(likeCount);
+                    let likeStr = "";
+                    for (var user in usersLike) {
+                        likeStr += user.Name;
+                    }
+                    $(postId).prop("title", "");
+                });
+            }
         } else
             endOfData = true;
         linefeeds_to_Html_br(".postText");
@@ -456,52 +561,58 @@ async function renderPost(post) {
     let date = convertToFrenchDate(UTC_To_Local(post.Date));
     let crudIcon = "";
     if (user != null) {
-        crudIcon =
-            `
-            <span class="editCmd cmdIconSmall fa fa-pencil" postId="${post.Id}" title="Modifier nouvelle"></span>
-            <span class="deleteCmd cmdIconSmall fa fa-trash" postId="${post.Id}" title="Effacer nouvelle"></span>
-            `;
+        if (post.CreatorId == user.User.Id) {
+            crudIcon =
+                `
+                <span class="editCmd cmdIconSmall fa fa-pencil" postId="${post.Id}" title="Modifier nouvelle"></span>
+                <span class="deleteCmd cmdIconSmall fa fa-trash" postId="${post.Id}" title="Effacer nouvelle"></span>
+                `;
+        } else if (user.User.isAdmin) {
+            crudIcon =
+                `
+                <span class="deleteCmd cmdIconSmall fa fa-trash" postId="${post.Id}" title="Effacer nouvelle"></span>
+                `;
+        }
     }
     let likeSection = "";
     if (user != null) {
-        //let userLiked = await Likes_API.GetLiked(user.User.Id, post.Id);
+        let userLiked = await Likes_API.GetLiked(user.User.Id, post.Id);
+        let likeCount = await Likes_API.GetLikesFromPost(post.Id);
 
-        if (true) {
+        if (userLiked) {
             likeSection =
                 `
-                <span class="fa-solid fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
-                <span>0</span>
+                <span id="like-${post.Id}" class="fa-solid fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
+                <span title="" id="post-${post.Id}">${likeCount}</span>
                 `;
         } else {
             likeSection =
                 `
-                <span class="fa-regular fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
-                <span>0</span>
+                <span id="like-${post.Id}" class="fa-regular fa-thumbs-up likeCmd cmdIconSmall" postId="${post.Id}" title="Modifier nouvelle"></span>
+                <span title="" id="post-${post.Id}">0</span>
                 `;
         }
     }
 
-    console.log("here");
-
     return $(`
-        <div class="post" id="${post.Id}">
-            <div class="postHeader">
-                ${post.Category}
-                ${crudIcon}
-                ${likeSection}
+            <div class="post" id="${post.Id}">
+                <div class="postHeader">
+                    ${post.Category}
+                    ${crudIcon}
+                    ${likeSection}
+                </div>
+                <div class="postTitle"> ${post.Title} </div>
+                <img class="postImage" src='${post.Image}'/>
+                <div class="postDate"> ${date} </div>
+                <div postId="${post.Id}" class="postTextContainer hideExtra">
+                    <div class="postText" >${post.Text}</div>
+                </div>
+                <div class="postfooter">
+                    <span postId="${post.Id}" class="moreText cmdIconXSmall fa fa-angle-double-down" title="Afficher la suite"></span>
+                    <span postId="${post.Id}" class="lessText cmdIconXSmall fa fa-angle-double-up" title="Réduire..."></span>
+                </div>         
             </div>
-            <div class="postTitle"> ${post.Title} </div>
-            <img class="postImage" src='${post.Image}'/>
-            <div class="postDate"> ${date} </div>
-            <div postId="${post.Id}" class="postTextContainer hideExtra">
-                <div class="postText" >${post.Text}</div>
-            </div>
-            <div class="postfooter">
-                <span postId="${post.Id}" class="moreText cmdIconXSmall fa fa-angle-double-down" title="Afficher la suite"></span>
-                <span postId="${post.Id}" class="lessText cmdIconXSmall fa fa-angle-double-up" title="Réduire..."></span>
-            </div>         
-        </div>
-    `);
+        `);
 }
 async function compileCategories() {
     categories = [];
@@ -535,6 +646,14 @@ function updateDropDownMenu() {
                 showConnection();
             });
     } else {
+        DDMenu.append($(`
+            <div class="profileContainer">
+                <div class="UserAvatarXSmall" style="background-image:url('${user.User.Avatar}')"></div>
+                <div>${user.User.Name}<div>
+            </div>
+
+            `));
+        DDMenu.append($(`<div class="dropdown-divider"></div>`));
         if (user.User.isAdmin) {
             DDMenu.append($(`
                 <div class="dropdown-item menuItemLayout" id="gestionAdmin">
@@ -552,7 +671,7 @@ function updateDropDownMenu() {
                 <i class="menuIcon mx-2 fa-solid fa-arrow-right-to-bracket"></i>Modifier votre profil
             </div>`));
         $("#modifyProfil").on("click", function() {
-            renderAccountForm();
+            showAccountForm();
         });
         DDMenu.append($(`
             <div class="dropdown-item menuItemLayout" id="logout">
@@ -604,15 +723,11 @@ function updateDropDownMenu() {
     });
 }
 function attach_Posts_UI_Events_Callback() {
-
     linefeeds_to_Html_br(".postText");
     // attach icon command click event callback
     $(".editCmd").off();
     $(".editCmd").on("click", function () {
         showEditPostForm($(this).attr("postId"));
-    });
-    $(".likeCmd").on("click", function() {
-        Likes_API.SetLike(user.User.Id, $(this).attr("postId"));
     });
     $(".deleteCmd").off();
     $(".deleteCmd").on("click", function () {

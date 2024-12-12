@@ -13,7 +13,9 @@ RouteRegister.add('GET', 'Bookmarks', 'list');
 //likes
 RouteRegister.add('GET', 'likes', 'DeleteUser');
 RouteRegister.add('GET', 'likes', 'getliked');
+RouteRegister.add('GET', 'likes', 'getlikesfrompost');
 RouteRegister.add('GET', 'likes', 'setlike');
+
 
 //accounts
 RouteRegister.add('GET', 'accounts');
@@ -22,6 +24,7 @@ RouteRegister.add('GET', 'accounts', 'verify');
 RouteRegister.add('GET', 'accounts', 'logout');
 RouteRegister.add('PUT', 'accounts', 'modify');
 RouteRegister.add('GET', 'accounts', 'remove');
+RouteRegister.add('GET', 'accounts', 'deleteuser');
 RouteRegister.add('GET', 'accounts', 'conflict');
 RouteRegister.add('POST', 'accounts', 'block');
 RouteRegister.add('POST', 'accounts', 'promote');

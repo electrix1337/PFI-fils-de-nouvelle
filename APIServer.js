@@ -16,7 +16,7 @@ let hideHeadRequest = serverVariables.get("main.hideHeadRequest");
 global.Server_UTC_Offset = new Date().getTimezoneOffset() / 60;
 
 export default class APIServer {
-    constructor(port = process.env.PORT || 5001) {
+    constructor(port = process.env.PORT || 5002) {
         this.port = port;
         this.initMiddlewaresPipeline();
         this.httpContext = null;

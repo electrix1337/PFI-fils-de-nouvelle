@@ -35,6 +35,7 @@ export default class AccountsController extends Controller {
                     if (user.Password == loginInfo.Password) {
                         user = this.repository.get(user.Id);
                         let newToken = TokenManager.create(user);
+                        this.HttpContext.Authorizations = user.Authorizations;
                         this.HttpContext.response.created(newToken);
                     } else {
                         this.HttpContext.response.wrongPassword("Wrong password.");
@@ -204,17 +205,45 @@ export default class AccountsController extends Controller {
             this.HttpContext.response.unAuthorized();
     }
 
-    // GET:account/remove/id
-    remove(id) { // warning! this is not an API endpoint 
+    deleteuser() {
+        let id = this.HttpContext.path.params.userId;
         // todo make sure that the requester has legitimity to delete ethier itself or its an admin
-        if (AccessControl.writeGrantedAdminOrOwner(this.HttpContext.authorizations, this.requiredAuthorizations, id)) {
+        if (AccessControl.writeGrantedAdminOrOwner(this.HttpContext.authorizations, AccessControl.user(), id)) {
             let posts = new Repository(new PostModel());
             let likes = new Repository(new LikeModel());
+            this.repository.remove(id);
 
-            let likesData = likes.findByField("UserId", id);
-            let postsData = posts.findByField("CreatorId", id);
-            
-            
+            let likesData = this.repository.findByFilter((object) => {
+                if (object.UserId == id) {
+                    likes.remove(object.Id);
+                }
+            });
+            let postsData = this.repository.findByFilter((object) => {
+                if (object.CreatorId == id) {
+                    posts.remove(object.Id);
+                }
+            });
+        }
+    }
+    // GET:account/remove/id
+    remove() { // warning! this is not an API endpoint 
+        let id = this.HttpContext.path.params.userId;
+        // todo make sure that the requester has legitimity to delete ethier itself or its an admin
+        if (AccessControl.writeGrantedAdminOrOwner(this.HttpContext, AccessControl.user(), id)) {
+            let posts = new Repository(new PostModel());
+            let likes = new Repository(new LikeModel());
+            this.repository.remove(id);
+
+            let likesData = this.repository.findByFilter((object) => {
+                if (object.UserId == id) {
+                    likes.remove(object.Id);
+                }
+            });
+            let postsData = this.repository.findByFilter((object) => {
+                if (object.CreatorId == id) {
+                    posts.remove(object.Id);
+                }
+            });
         }
     }
 }
